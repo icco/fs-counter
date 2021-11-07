@@ -58,7 +58,7 @@ func main() {
 
 			// Ignore hidden files
 			if strings.HasPrefix(path, ".") {
-				return nil
+				return fs.SkipDir
 			}
 
 			counts[pc.FilePath] += 1
