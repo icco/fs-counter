@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -24,6 +25,38 @@ const (
 type PathConfig struct {
 	FilePath string
 	Count    Counter
+	Include  string
+}
+
+func (pc *PathConfig) IsValid(path string, d fs.DirEntry) (bool, error) {
+	// Ignore hidden files
+	if path != "." && d.IsDir() {
+		if strings.HasPrefix(path, ".") {
+			log.Printf("skipping %q", path)
+			return false, fs.SkipDir
+		}
+	}
+
+	switch pc.Count {
+	case Directory:
+		if d.IsDir() {
+			if pc.Include == "" {
+				return true, nil
+			}
+			return filepath.Match(pc.Include, path)
+		}
+	case File:
+		if !d.IsDir() {
+			if pc.Include == "" {
+				return true, nil
+			}
+			return filepath.Match(pc.Include, path)
+		}
+	default:
+		return false, fmt.Errorf("not a valid Counter")
+	}
+
+	return false, nil
 }
 
 func main() {
@@ -56,23 +89,13 @@ func main() {
 				return fmt.Errorf("could not walk %q: %w", path, err)
 			}
 
-			// Ignore hidden files
-			if path != "." && d.IsDir() && strings.HasPrefix(path, ".") {
-				log.Printf("skipping %q", path)
-				return fs.SkipDir
+			inc, err := pc.IsValid(path, d)
+			if err != nil {
+				return err
 			}
 
-			switch pc.Count {
-			case Directory:
-				if d.IsDir() {
-					counts[pc.FilePath] += 1
-				}
-			case File:
-				if !d.IsDir() {
-					counts[pc.FilePath] += 1
-				}
-			default:
-				return fmt.Errorf("not a valid Counter")
+			if inc {
+				counts[pc.FilePath] += 1
 			}
 
 			return nil
