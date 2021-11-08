@@ -24,8 +24,6 @@ const (
 type PathConfig struct {
 	FilePath string
 	Count    Counter
-	Include  string
-	Exclude  string
 }
 
 func main() {
@@ -61,9 +59,19 @@ func main() {
 				return fs.SkipDir
 			}
 
-			counts[pc.FilePath] += 1
+			switch pc.Count {
+			case Directory:
+				if d.IsDir() {
+					counts[pc.FilePath] += 1
+				}
+			case File:
+				if !d.IsDir() {
+					counts[pc.FilePath] += 1
+				}
+			default:
+				return fmt.Errorf("not a valid Counter")
+			}
 
-			fmt.Println(path)
 			return nil
 		}); err != nil {
 			log.Fatalf("walk error: %+v", err)
