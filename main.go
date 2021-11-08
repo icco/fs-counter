@@ -11,10 +11,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config is the overall configuration for fs-counter as stored in JSON.
 type Config struct {
 	Paths []*PathConfig
 }
 
+// Counter is an enum for counting files or directories.
 type Counter string
 
 const (
@@ -22,12 +24,15 @@ const (
 	File      Counter = "file"
 )
 
+// PathConfig defines how files or directories in a path should be counted.
 type PathConfig struct {
 	FilePath string
 	Count    Counter
 	Include  string
 }
 
+// IsValid checks to see if a path should be counted based on the configuration
+// provided.
 func (pc *PathConfig) IsValid(path string, d fs.DirEntry) (bool, error) {
 	// Ignore hidden files
 	if path != "." && d.IsDir() {
