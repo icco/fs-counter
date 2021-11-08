@@ -48,13 +48,15 @@ func (pc *PathConfig) IsValid(path string, d fs.DirEntry) (bool, error) {
 			if pc.Include == "" {
 				return true, nil
 			}
+
 			return filepath.Match(pc.Include, path)
 		}
 	case File:
-		if !d.IsDir() {
+		if d.Type().IsRegular() {
 			if pc.Include == "" {
 				return true, nil
 			}
+
 			return filepath.Match(pc.Include, path)
 		}
 	default:
