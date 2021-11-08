@@ -48,6 +48,8 @@ func main() {
 
 	for _, pc := range c.Paths {
 		log.Printf("searching path: %+v", pc)
+
+		counts[pc.FilePath] = 0
 		fileSystem := os.DirFS(pc.FilePath)
 		if err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
@@ -55,7 +57,8 @@ func main() {
 			}
 
 			// Ignore hidden files
-			if strings.HasPrefix(path, ".") {
+			if path != "." && d.IsDir() && strings.HasPrefix(path, ".") {
+				log.Printf("skipping %q", path)
 				return fs.SkipDir
 			}
 
