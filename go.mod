@@ -1,4 +1,4 @@
-module github.com/icco/fs-counter
+module go.icco.me/fs-counter
 
 go 1.17
 
